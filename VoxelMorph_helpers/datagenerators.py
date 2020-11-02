@@ -1,29 +1,5 @@
-"""
-*Preliminary* pytorch implementation.
-
-data generators for voxelmorph
-"""
-
 import numpy as np
 import sys
-
-
-def load_example_by_name(vol_name, seg_name=None):
-    """
-    load a specific volume and segmentation
-    """
-    X = np.load(vol_name)['vol_data']
-    X = np.reshape(X, (1,) + X.shape + (1,))
-
-    return_vals = [X]
-
-    if(seg_name):
-        X_seg = np.load(seg_name)['vol_data']
-        X_seg = np.reshape(X_seg, (1,) + X_seg.shape + (1,))
-        return_vals.append(X_seg)
-
-    return tuple(return_vals)
-
 
 def load_volfile(datafile):
     """
@@ -84,11 +60,10 @@ def example_gen(vol_names, batch_size=1, return_segs=False, seg_dir=None):
         return_segs: logical on whether to return segmentations
         seg_dir: the segmentations directory.
     """
+    # shuffle training data
     rng=np.random.default_rng()
     idxes = rng.choice(len(vol_names), size=len(vol_names), replace=False)
     while True:
-        #idxes = np.random.randint(len(vol_names), size=batch_size)
-
         X_data = []
         for idx in range(batch_size):
             X = load_volfile(vol_names[idxes[idx]])
@@ -113,7 +88,8 @@ def example_gen(vol_names, batch_size=1, return_segs=False, seg_dir=None):
 
                 temp=temp[1:]
             idxes=temp
-
+            
+            # Re-shuffle data once entire set has been iterated through
             if len(idxes)==0:
               idxes = rng.choice(len(vol_names), size=len(vol_names), replace=False)
 
