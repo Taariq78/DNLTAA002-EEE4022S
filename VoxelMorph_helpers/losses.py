@@ -17,9 +17,8 @@ def gradient_loss(s, penalty='l2'):
     if(penalty == 'l2'):
         dy = dy * dy
         dx = dx * dx
-        #dz = dz * dz
 
-    d = torch.mean(dx) + torch.mean(dy) #+ torch.mean(dz)
+    d = torch.mean(dx) + torch.mean(dy) 
     return d / 3.0
 
 
