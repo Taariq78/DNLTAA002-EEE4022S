@@ -1,9 +1,3 @@
-"""
-*Preliminary* pytorch implementation.
-
-Losses for VoxelMorph
-"""
-
 import torch
 import torch.nn.functional as F
 import numpy as np
