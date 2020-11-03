@@ -1,3 +1,15 @@
+'''The core componets of training function was provided by - 
+
+VoxelMorph: A Learning Framework for Deformable Medical Image Registration
+Guha Balakrishnan, Amy Zhao, Mert R. Sabuncu, John Guttag, Adrian V. Dalca
+IEEE TMI: Transactions on Medical Imaging. 2019. eprint arXiv:1809.05231
+
+An Unsupervised Learning Model for Deformable Medical Image Registration
+Guha Balakrishnan, Amy Zhao, Mert R. Sabuncu, John Guttag, Adrian V. Dalca
+CVPR 2018. eprint arXiv:1802.02604 -
+
+and was modified to better suit the needs of this project'''
+
 # python imports
 import os
 import glob
