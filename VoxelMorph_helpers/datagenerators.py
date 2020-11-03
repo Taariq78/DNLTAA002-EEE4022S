@@ -2,7 +2,7 @@
 
 VoxelMorph: A Learning Framework for Deformable Medical Image Registration
 Guha Balakrishnan, Amy Zhao, Mert R. Sabuncu, John Guttag, Adrian V. Dalca
-IEEE TMI: Transactions on Medical Imaging. 2019. eprint arXiv:1809.05231
+IEEE TMI: Transactions on Medical Imaging. 2019. eprint arXiv:1809.05231 -
 
 and was modified to better suit the project's needs'''
 
