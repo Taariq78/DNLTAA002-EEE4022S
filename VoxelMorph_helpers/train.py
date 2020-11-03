@@ -40,8 +40,7 @@ def train(data_dir,
 
 
     # Produce the loaded atlas
-    atlas_vol = np.load(atlas_file)['vol'][np.newaxis, ..., np.newaxis]
-    vol_size = atlas_vol.shape[1:-1]
+    atlas = np.load(atlas_file)['vol'][np.newaxis, ..., np.newaxis]
 
     atlas_seg = np.load(atlas_file)['seg'][np.newaxis, ..., np.newaxis]
 
@@ -62,7 +61,7 @@ def train(data_dir,
     train_example_gen = datagenerators.example_gen(train_vol_names, batch_size, return_segs=True )
 
     # set up atlas tensor
-    atlas_vol_bs = np.repeat(atlas_vol, batch_size, axis=0)
+    atlas_vol_bs = np.repeat(atlas, batch_size, axis=0)
     input_fixed  = torch.from_numpy(atlas_vol_bs).to(device).float()
     # normalise data between 0 and 1
     input_fixed  = input_fixed/255.0
