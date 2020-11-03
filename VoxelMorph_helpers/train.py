@@ -2,8 +2,6 @@
 import os
 import glob
 import random
-import warnings
-from argparse import ArgumentParser
 
 # external imports
 import numpy as np
@@ -13,7 +11,8 @@ from torch.optim import Adam
 # internal imports
 import datagenerators
 import losses
-from voxelmorph.pytorch.model import SpatialTransformer
+import SpatialTransformer
+
 def train(data_dir,
           atlas_file,
           lr,
