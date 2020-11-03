@@ -109,7 +109,7 @@ def train(data_dir,
           dice_loss = dice_loss_fn(seg_fixed,warp_seg) 
           recon_loss = sim_loss_fn(warp, input_fixed) 
           grad_loss = grad_loss_fn(flow)
-          loss = recon_loss + reg_param * grad_loss + 0.01*dice_loss
+          loss = recon_loss + reg_param * grad_loss + 0.04*dice_loss
 
           print("Epoch:%d" % (epoch))
           print("Batch_number:%d" % (i))
