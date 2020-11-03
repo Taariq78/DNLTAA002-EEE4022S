@@ -33,7 +33,7 @@ def train(data_dir,
           reg_param, 
           batch_size,
           n_save_iter,
-          model_dir, network, EPOCH):
+          model_dir, network, EPOCH, seg = True):
 
           
     device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -41,7 +41,7 @@ def train(data_dir,
 
     # Produce the loaded atlas
     atlas = np.load(atlas_file)['vol'][np.newaxis, ..., np.newaxis]
-
+    # Atlas's corresponding segment
     atlas_seg = np.load(atlas_file)['seg'][np.newaxis, ..., np.newaxis]
 
     # Get all the names of the training data
@@ -101,11 +101,14 @@ def train(data_dir,
 
           # Run the data through the model to produce warp and flow field
           warp, flow = model(input_moving, input_fixed)
-
-          warp_seg=spatial(seg_moving,flow)
+          
+          if seg:
+                    warp_seg=spatial(seg_moving,flow)
+                    dice_loss = dice_loss_fn(seg_fixed,warp_seg)
+          else:
+                    dice_loss = 0
 
           # Calculate loss
-          dice_loss = dice_loss_fn(seg_fixed,warp_seg) 
           recon_loss = sim_loss_fn(warp, input_fixed) 
           grad_loss = grad_loss_fn(flow)
           loss = recon_loss + reg_param * grad_loss + 0.04*dice_loss
