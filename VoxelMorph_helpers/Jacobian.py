@@ -1,3 +1,10 @@
+'''The following Jacobian function code was provided by -
+
+VoxelMorph: A Learning Framework for Deformable Medical Image Registration
+Guha Balakrishnan, Amy Zhao, Mert R. Sabuncu, John Guttag, Adrian V. Dalca
+IEEE TMI: Transactions on Medical Imaging. 2019. eprint arXiv:1809.05231 '''
+
+
 import pystrum.pynd.ndutils as nd
 import neurite as ne
 
