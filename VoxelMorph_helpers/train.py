@@ -25,7 +25,7 @@ import datagenerators
 import losses
 import SpatialTransformer
 
-def register(target, target_seg, model, moving, reg_param, batch_size):
+def register(target, target_seg, model, moving, moving_seg, reg_param, batch_size):
           
     device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -34,27 +34,11 @@ def register(target, target_seg, model, moving, reg_param, batch_size):
 
     sim_loss_fn_V= losses.ncc_loss if data_loss == "ncc" else losses.mse_loss
     grad_loss_fn_V = losses.gradient_loss
-    dice_loss_fn_V = losses.diceLoss
-                        
-    # set up moving image                 
-    atlas_m = np.load(moving)
-    atlas_vol_m = atlas_m['vol_data'][np.newaxis, ..., np.newaxis]
-    atlas_seg_m = atlas_m['seg'][np.newaxis, ..., np.newaxis]
-          
-    atlas_mov_bs = np.repeat(atlas_vol_m, batch_size, axis=0) 
-    input_moving = torch.from_numpy(atlas_mov_bs).to(device).float()
-    input_moving = input_moving/255.0
-    input_moving = input_moving.permute(0, 3, 1, 2)
-   
-    # set up moving image's corresponding segmentation
-    seg_mov_bs = np.repeat(atlas_seg_m, batch_size, axis=0)
-    seg_moving = torch.from_numpy(seg_mov_bs).to(device).float()
-    seg_moving = seg_moving/255.0
-    seg_moving = seg_moving.permute(0, 3, 1, 2)    
+    dice_loss_fn_V = losses.diceLoss                        
 
     # pass image-pair through model      
-    warp_V, flow_V = model(input_moving, input_fixed)
-    warp_seg_V = spatial(seg_moving,flow_V)
+    warp_V, flow_V = model(moving, target)
+    warp_seg_V = spatial(moving_seg,flow_V)
 
     # calculate losses      
     loss_dice_V = dice_loss_fn_V(target_seg, warp_seg_V)
@@ -73,7 +57,7 @@ def train(data_dir,
           reg_param, 
           batch_size,
           n_save_iter,
-          model_dir, network, EPOCH, seg = True):
+          model_dir, network, EPOCH, seg = True, validation_vol_names):
           
     device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -96,7 +80,8 @@ def train(data_dir,
     dice_loss_fn = losses.diceLoss
 
     # data generator
-    train_example_gen = datagenerators.example_gen(train_vol_names, batch_size, return_segs=True )
+    train_example_gen = datagenerators.example_gen(train_vol_names, batch_size, return_segs=True)
+    validate_example_gen = datagenerators.example_gen(validation_vol_names, batch_size, return_segs=True)
 
     # set up atlas tensor
     atlas_vol_bs = np.repeat(atlas, batch_size, axis=0)
@@ -115,6 +100,8 @@ def train(data_dir,
     spatial=spatial.to(device)
 
     all_losses=torch.empty(1)
+    validation = []
+    model.train() 
     # Training loop.
     for epoch in range(EPOCH):
    
@@ -124,6 +111,25 @@ def train(data_dir,
           if i % n_save_iter == 0:
               save_file_name = os.path.join(model_dir, '%d_%d.ckpt' % (epoch,i))
               torch.save(model.state_dict(), save_file_name)
+              
+              valid_loss=torch.empty(1)
+              with torch.no_grad():
+                model.eval()
+                for data in range(len(validation_vol_names)//batch_size):
+                  moving_image_V, moving_segment_V = next(validate_example_gen)  
+          
+                  input_moving_V = torch.from_numpy(moving_image_V[0]).to(device).float()
+                  input_moving_V=input_moving_V/255.0
+                  input_moving_V = input_moving_V.permute(0, 3, 1, 2)
+
+                  seg_moving_V = torch.from_numpy(moving_segment_V[0]).to(device).float()
+                  seg_moving_V=seg_moving_V/255.0
+                  seg_moving_V = seg_moving_V.permute(0, 3, 1, 2)
+                  
+                  Total_loss = register(input_fixed, seg_fixed, model, input_moving_V, seg_moving_V, reg_param, batch_size):
+                  valid_loss=torch.cat((valid_loss,torch.as_tensor(Total_loss.item()).view(1)),0)   
+                validation.append(torch.mean(valid_loss[1:]))
+              model.train()           
 
           # Generate the moving images and convert them to tensors.
           moving_image, moving_segment = next(train_example_gen)
