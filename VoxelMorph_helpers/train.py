@@ -25,7 +25,7 @@ import datagenerators
 import losses
 import SpatialTransformer
 
-def register(target, target_seg, model, moving, reg_param):
+def register(target, target_seg, model, moving, reg_param, batch_size):
           
     device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -36,6 +36,7 @@ def register(target, target_seg, model, moving, reg_param):
     grad_loss_fn_V = losses.gradient_loss
     dice_loss_fn_V = losses.diceLoss
                         
+    # set up moving image                 
     atlas_m = np.load(moving)
     atlas_vol_m = atlas_m['vol_data'][np.newaxis, ..., np.newaxis]
     atlas_seg_m = atlas_m['seg'][np.newaxis, ..., np.newaxis]
@@ -44,26 +45,23 @@ def register(target, target_seg, model, moving, reg_param):
     input_moving = torch.from_numpy(atlas_mov_bs).to(device).float()
     input_moving = input_moving/255.0
     input_moving = input_moving.permute(0, 3, 1, 2)
-
+   
+    # set up moving image's corresponding segmentation
     seg_mov_bs = np.repeat(atlas_seg_m, batch_size, axis=0)
     seg_moving = torch.from_numpy(seg_mov_bs).to(device).float()
     seg_moving = seg_moving/255.0
     seg_moving = seg_moving.permute(0, 3, 1, 2)    
 
-
-    fixed_seg = target_seg.to('cpu')
-    fixed_seg = fixed_seg.detach().numpy()
-    moving_seg = seg_moving.to('cpu')
-    moving_seg = moving_seg.detach().numpy()
-
+    # pass image-pair through model      
     warp_V, flow_V = model(input_moving, input_fixed)
- 
+    warp_seg_V = spatial(seg_moving,flow_V)
+
+    # calculate losses      
+    loss_dice_V = dice_loss_fn_V(target_seg, warp_seg_V)
+    recon_loss_V = sim_loss_fn_V(warp_V, target) 
     loss_grad_V = grad_loss_fn_V(flow_V)
 
-    warp_seg_V = spatial(seg_moving,flow_V)
-    loss_dice_V = dice_loss_fn_V(input_fixed_seg, warp_seg_V)
-
-    V_Loss = sim_loss_fn_V + reg_param*loss_grad_V + 0.01*loss_dice_V
+    V_Loss = recon_loss_V + reg_param*loss_grad_V + 0.01*loss_dice_V
 
     return V_Loss
 
