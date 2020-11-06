@@ -23,7 +23,7 @@ from torch.optim import Adam
 # internal imports
 import datagenerators
 import losses
-import SpatialTransformer
+from voxelmorph.pytorch.model import SpatialTransformer
 
 def register(target, target_seg, model, moving, moving_seg, reg_param):
           
