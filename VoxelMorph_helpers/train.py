@@ -25,7 +25,7 @@ import datagenerators
 import losses
 import SpatialTransformer
 
-def register(target, target_seg, model, moving, moving_seg, reg_param, batch_size):
+def register(target, target_seg, model, moving, moving_seg, reg_param):
           
     device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -126,7 +126,7 @@ def train(data_dir,
                   seg_moving_V=seg_moving_V/255.0
                   seg_moving_V = seg_moving_V.permute(0, 3, 1, 2)
                   
-                  Total_loss = register(input_fixed, seg_fixed, model, input_moving_V, seg_moving_V, reg_param, batch_size):
+                  Total_loss = register(input_fixed, seg_fixed, model, input_moving_V, seg_moving_V, reg_param):
                   valid_loss=torch.cat((valid_loss,torch.as_tensor(Total_loss.item()).view(1)),0)   
                 validation.append(torch.mean(valid_loss[1:]))
               model.train()           
