@@ -25,6 +25,48 @@ import datagenerators
 import losses
 import SpatialTransformer
 
+def register(target, target_seg, model, moving, reg_param):
+          
+    device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    spatial=SpatialTransformer((256,256))
+    spatial=spatial.to(device)
+
+    sim_loss_fn_V= losses.ncc_loss if data_loss == "ncc" else losses.mse_loss
+    grad_loss_fn_V = losses.gradient_loss
+    dice_loss_fn_V = losses.diceLoss
+                        
+    atlas_m = np.load(moving)
+    atlas_vol_m = atlas_m['vol_data'][np.newaxis, ..., np.newaxis]
+    atlas_seg_m = atlas_m['seg'][np.newaxis, ..., np.newaxis]
+          
+    atlas_mov_bs = np.repeat(atlas_vol_m, batch_size, axis=0) 
+    input_moving = torch.from_numpy(atlas_mov_bs).to(device).float()
+    input_moving = input_moving/255.0
+    input_moving = input_moving.permute(0, 3, 1, 2)
+
+    seg_mov_bs = np.repeat(atlas_seg_m, batch_size, axis=0)
+    seg_moving = torch.from_numpy(seg_mov_bs).to(device).float()
+    seg_moving = seg_moving/255.0
+    seg_moving = seg_moving.permute(0, 3, 1, 2)    
+
+
+    fixed_seg = target_seg.to('cpu')
+    fixed_seg = fixed_seg.detach().numpy()
+    moving_seg = seg_moving.to('cpu')
+    moving_seg = moving_seg.detach().numpy()
+
+    warp_V, flow_V = model(input_moving, input_fixed)
+ 
+    loss_grad_V = grad_loss_fn_V(flow_V)
+
+    warp_seg_V = spatial(seg_moving,flow_V)
+    loss_dice_V = dice_loss_fn_V(input_fixed_seg, warp_seg_V)
+
+    V_Loss = sim_loss_fn_V + reg_param*loss_grad_V + 0.01*loss_dice_V
+
+    return V_Loss
+
 def train(data_dir,
           atlas_file,
           lr,
@@ -34,10 +76,8 @@ def train(data_dir,
           batch_size,
           n_save_iter,
           model_dir, network, EPOCH, seg = True):
-
           
     device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
 
     # Produce the loaded atlas
     atlas = np.load(atlas_file)['vol'][np.newaxis, ..., np.newaxis]
@@ -69,7 +109,6 @@ def train(data_dir,
 
     atlas_seg_bs = np.repeat(atlas_seg, batch_size, axis=0)
     seg_fixed  = torch.from_numpy(atlas_seg_bs).to(device).float()
-
     # normalise data between 0 and 1
     seg_fixed  = seg_fixed/255.0
     seg_fixed  = seg_fixed.permute(0, 3, 1, 2)
@@ -111,7 +150,7 @@ def train(data_dir,
           # Calculate loss
           recon_loss = sim_loss_fn(warp, input_fixed) 
           grad_loss = grad_loss_fn(flow)
-          loss = recon_loss + reg_param * grad_loss + 0.04*dice_loss
+          loss = recon_loss + reg_param * grad_loss + 0.01*dice_loss
 
           print("Epoch:%d" % (epoch))
           print("Batch_number:%d" % (i))
