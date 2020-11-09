@@ -7,7 +7,7 @@ An Unsupervised Learning Model for Deformable Medical Image Registration
 Guha Balakrishnan, Amy Zhao, Mert R. Sabuncu, John Guttag, Adrian V. Dalca
 CVPR 2018. eprint arXiv:1802.02604 -
 
-and was modified to better suit the needs of the project'''
+and was greatly modified to better suit the needs of the project'''
 
 # python imports
 import os
