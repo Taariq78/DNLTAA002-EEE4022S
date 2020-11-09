@@ -9,15 +9,15 @@ CVPR 2018. eprint arXiv:1802.02604 -
 
 and was greatly modified to better suit the needs of the project'''
 
-# python imports
+#imports
 import os
 import glob
 import random
-
-# external imports
 import numpy as np
 import torch
 from torch.optim import Adam
+
+# external imports
 from voxelmorph.pytorch.model import SpatialTransformer
 
 # internal imports
