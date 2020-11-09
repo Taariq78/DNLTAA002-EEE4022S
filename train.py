@@ -78,7 +78,7 @@ def train(data_dir,
     grad_loss_fn = losses.gradient_loss
     dice_loss_fn = losses.diceLoss
 
-    # data generator
+    # data generator for training data and validation data
     train_example_gen = datagenerators.example_gen(train_vol_names, batch_size, return_segs=True)
     validate_example_gen = datagenerators.example_gen(validation_vol_names, batch_size, return_segs=True)
 
