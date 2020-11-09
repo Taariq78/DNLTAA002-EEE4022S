@@ -39,7 +39,7 @@ def register(target, target_seg, model, moving, moving_seg, reg_param, data_loss
     warp_V, flow_V = model(moving, target)
     warp_seg_V = spatial(moving_seg,flow_V)
 
-    # calculate losses      
+    # calculate validation losses      
     loss_dice_V = dice_loss_fn_V(target_seg, warp_seg_V)
     recon_loss_V = sim_loss_fn_V(warp_V, target) 
     loss_grad_V = grad_loss_fn_V(flow_V)
