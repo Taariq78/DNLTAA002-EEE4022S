@@ -102,10 +102,8 @@ def train(data_dir,
     validation = []
     model.train() 
     # Training loop.
-    for epoch in range(EPOCH):
-   
+    for epoch in range(EPOCH):   
       for i in range(len(train_vol_names)//batch_size):
-
           # Save model checkpoint
           if i % n_save_iter == 0:
               save_file_name = os.path.join(model_dir, '%d_%d.ckpt' % (epoch,i))
@@ -126,7 +124,8 @@ def train(data_dir,
                   seg_moving_V = seg_moving_V.permute(0, 3, 1, 2)
                   
                   Total_loss = register(input_fixed, seg_fixed, model, input_moving_V, seg_moving_V, reg_param, data_loss)
-                  valid_loss=torch.cat((valid_loss,torch.as_tensor(Total_loss.item()).view(1)),0)   
+                  valid_loss=torch.cat((valid_loss,torch.as_tensor(Total_loss.item()).view(1)),0)  
+                #store validation loss    
                 validation.append(torch.mean(valid_loss[1:]))
               model.train()           
 
@@ -163,6 +162,7 @@ def train(data_dir,
           print("dice_loss:%f" % (dice_loss.item()))
           print("---------------------------------------\n")
           
+          #record and store loss in tensor
           all_losses=torch.cat((all_losses,torch.as_tensor(loss.item()).view(1)),0)
 
           # Backwards and optimize
