@@ -9,4 +9,4 @@ Models & Operations is a notebook that contains the network architecture and the
 
 VoxelMorph helpers contain utility functions made available by the original VoxelMorph implementation
 
-train contains code responsible for the training and validation of the model
+train is a script containing code responsible for the training and validation of the model
