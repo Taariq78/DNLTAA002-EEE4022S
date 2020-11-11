@@ -7,3 +7,4 @@ Validation is the notebook that was used to conduct the K-fold validation
 
 Models & Operations is a notebook that contains the network architecture and the general operations, such as the training proceedure and the exporting of results
 
+VoxelMorph helpers contain utility functions made available by the original VoxelMorph implementation
